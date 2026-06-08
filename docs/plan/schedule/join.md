@@ -24,7 +24,7 @@
 | 방이 closed + 쿠키 있음 | `/schedule/[id]`로 리다이렉트.                                        |
 | 방이 closed + 쿠키 없음 | "종료된 방이에요" 안내 메시지만 표시.                                 |
 
-> **정원 초과 판단**: `schedule.memberCount` ≤ 현재 등록된 멤버 수(`memberList.length`)
+> **정원 초과 판단**: `team.memberCount` ≤ 현재 등록된 멤버 수(`memberList.length`)
 
 ---
 
@@ -45,7 +45,7 @@
 - 닉네임 텍스트 입력 필드 (최대 5자)
 - [참여하기] 버튼
   - 클릭 시 `POST /api/schedules/[id]/members` 호출
-  - **성공**: 발급된 memberId와 닉네임을 쿠키에 저장 → 슬롯 그리드 화면으로 전환 (닉네임 입력 UI 완전히 제거)
+  - **성공**: 응답의 `member.token`을 `memberToken`으로, 닉네임을 쿠키에 저장 → 슬롯 그리드 화면으로 전환 (닉네임 입력 UI 완전히 제거)
   - **실패 (중복 닉네임)**: "이미 사용 중인 닉네임이에요." 인라인 오류 표시
   - 닉네임 입력 없이 버튼 클릭 시 "닉네임을 입력해주세요." 오류
 
@@ -171,7 +171,7 @@ Response 409: { "error": "Schedule is closed" }
 
 ### 단계 1: 입장 제한 (등록 정원)
 
-- 등록된 멤버 수(`memberList.length`) ≥ `schedule.memberCount`이면 신규 닉네임 등록 불가
+- 등록된 멤버 수(`memberList.length`) ≥ `team.memberCount`이면 신규 닉네임 등록 불가
 - `POST /api/schedules/[id]/members` 호출 시 서버에서 정원 초과 여부 확인
   - 정원 초과 시 `409 Room is full` 응답
 - 클라이언트는 진입 시 `GET /api/schedules/[id]`로 `memberList.length`와 `memberCount`를 비교하여 정원 초과 여부 판단
@@ -179,6 +179,6 @@ Response 409: { "error": "Schedule is closed" }
 ### 단계 2: 자동 종료 (제출 정원)
 
 - 슬롯 제출 완료(`PUT /availability`) 후 서버에서 조건 확인:
-  - `schedule.memberCount` == `submittedCount`
+  - `team.memberCount` == `submittedCount`
 - 조건 충족 시 방 상태를 자동으로 `closed`로 변경
 - 클라이언트는 결과 화면 진입 시 방 상태가 closed임을 확인하고 '종료된 방' 뱃지 표시
